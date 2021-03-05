@@ -42,12 +42,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('nickname')
-  handleNicknameEvent(
+  async handleNicknameEvent(
     @MessageBody() nickname: string,
     @ConnectedSocket() client: Socket,
-  ): void {
+  ): Promise<void> {
     try {
-      const chatClient = this.chatService.addClient(client.id, nickname);
+      const chatClient = await this.chatService.addClient(client.id, nickname);
       const welcome: WelcomeDto = {
         clients: this.chatService.getClients(),
         messages: this.chatService.getMessages(),

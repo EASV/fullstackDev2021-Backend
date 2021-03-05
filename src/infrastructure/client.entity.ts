@@ -1,10 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Client {
-  @PrimaryGeneratedColumn()
-  public id: number;
+  @PrimaryColumn({unique: true})
+  public id: string;
 
-  @Column()
+  @Column({unique: true})
   public nickname: string;
 }

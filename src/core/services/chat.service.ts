@@ -22,7 +22,7 @@ export class ChatService implements IChatService {
     return chatMessage;
   }
 
-  addClient(id: string, nickname: string): ChatClient {
+  async addClient(id: string, nickname: string): Promise<ChatClient> {
     let chatClient = this.clients.find(
       (c) => c.nickname === nickname && c.id === id,
     );
@@ -35,9 +35,10 @@ export class ChatService implements IChatService {
     // chatClient = { id: id, nickname: nickname };
     // this.clients.push(chatClient);
     let client = this.clientRepository.create();
+    client.id = id;
     client.nickname = nickname;
-    this.clientRepository.save(client);
-    return chatClient;
+    client = await this.clientRepository.save(client);
+    return {id: '' + client.id, nickname: client.nickname};
   }
 
   getClients(): ChatClient[] {
