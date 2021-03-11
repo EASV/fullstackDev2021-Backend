@@ -5,6 +5,7 @@ import { IChatService } from '../primary-ports/chat.service.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from '../../infrastructure/client.entity';
 import { Repository } from 'typeorm';
+import { json } from 'express';
 
 @Injectable()
 export class ChatService implements IChatService {
@@ -23,34 +24,35 @@ export class ChatService implements IChatService {
   }
 
   async addClient(id: string, nickname: string): Promise<ChatClient> {
-    let chatClient = this.clients.find(
-      (c) => c.nickname === nickname && c.id === id,
-    );
-    if (chatClient) {
+    const clientDb = await this.clientRepository.findOne({nickname: nickname})
+    if(!clientDb) {
+      let client = this.clientRepository.create();
+      client.id = id;
+      client.nickname = nickname;
+      client = await this.clientRepository.save(client);
+      const chatClient = JSON.parse(JSON.stringify(client));
+      this.clients.push(chatClient);
       return chatClient;
     }
-    if (this.clients.find((c) => c.nickname === nickname)) {
+    if(clientDb.id === id) {
+      return {id: clientDb.id, nickname: clientDb.nickname};
+    } else {
       throw new Error('Nickname already used!');
     }
-    // chatClient = { id: id, nickname: nickname };
-    // this.clients.push(chatClient);
-    let client = this.clientRepository.create();
-    client.id = id;
-    client.nickname = nickname;
-    client = await this.clientRepository.save(client);
-    return {id: '' + client.id, nickname: client.nickname};
   }
 
-  getClients(): ChatClient[] {
-    return this.clients;
+  async getClients(): Promise<ChatClient[]> {
+    const clients = await this.clientRepository.find();
+    const chatClients: ChatClient[] = JSON.parse(JSON.stringify(clients));
+    return chatClients;
   }
 
   getMessages(): ChatMessage[] {
     return this.allMessages;
   }
 
-  deleteClient(id: string): void {
-    this.clients = this.clients.filter((c) => c.id !== id);
+  async deleteClient(id: string): Promise<void> {
+    await this.clientRepository.delete({id: id});
   }
 
   updateTyping(typing: boolean, id: string): ChatClient {
