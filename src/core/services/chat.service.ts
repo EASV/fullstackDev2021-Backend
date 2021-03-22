@@ -5,7 +5,6 @@ import { IChatService } from '../primary-ports/chat.service.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from '../../infrastructure/client.entity';
 import { Repository } from 'typeorm';
-import { json } from 'express';
 
 @Injectable()
 export class ChatService implements IChatService {
@@ -16,9 +15,9 @@ export class ChatService implements IChatService {
               private clientRepository: Repository<Client>) {
   }
 
-  addMessage(message: string, clientId: string): ChatMessage {
-    const client = this.clients.find((c) => c.id === clientId);
-    const chatMessage: ChatMessage = { message: message, sender: client };
+  async addMessage(message: string, clientId: string): Promise<ChatMessage> {
+    const clientDb = await this.clientRepository.findOne({id: clientId})
+    const chatMessage: ChatMessage = { message: message, sender: clientDb };
     this.allMessages.push(chatMessage);
     return chatMessage;
   }
@@ -61,5 +60,17 @@ export class ChatService implements IChatService {
       chatClient.typing = typing;
       return chatClient;
     }
+  }
+
+  async getClient(id: string): Promise<ChatClient> {
+    const clientDb: Client = await this.clientRepository.findOne({id: id})
+    /*const chatClient: ChatClient = {
+      id: clientDb.id,
+      nickname: clientDb.nickname
+    };*/
+    // JSON.stringify(clientDb) = JSON STrING = {id: sks, nickname: djsdj}
+    // JSON.parse ({id: sks, nickname: djsdj})
+    //const chatClient: ChatClient = JSON.parse(JSON.stringify(clientDb));
+    return clientDb;
   }
 }
