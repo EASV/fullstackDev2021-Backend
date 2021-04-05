@@ -5,7 +5,6 @@ import { IChatService } from '../primary-ports/chat.service.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from '../../infrastructure/client.entity';
 import { Repository } from 'typeorm';
-import { json } from 'express';
 
 @Injectable()
 export class ChatService implements IChatService {
@@ -27,7 +26,6 @@ export class ChatService implements IChatService {
     const clientDb = await this.clientRepository.findOne({nickname: nickname})
     if(!clientDb) {
       let client = this.clientRepository.create();
-      client.id = id;
       client.nickname = nickname;
       client = await this.clientRepository.save(client);
       const chatClient = JSON.parse(JSON.stringify(client));
