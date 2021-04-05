@@ -12,6 +12,8 @@ import {
   IChatService,
   IChatServiceProvider,
 } from '../../core/primary-ports/chat.service.interface';
+import { JoinChatDto } from '../dtos/join-chat.dto';
+import { ChatClient } from '../../core/models/chat-client.model';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -41,13 +43,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('nickname')
-  async handleNicknameEvent(
-    @MessageBody() nickname: string,
+  @SubscribeMessage('joinChat')
+  async handleJoinChatEvent(
+    @MessageBody() joinChatClientDto: JoinChatDto,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     try {
-      const chatClient = await this.chatService.addClient(client.id, nickname);
+      let chatClient: ChatClient = JSON.parse(JSON.stringify(joinChatClientDto));
+      chatClient = await this.chatService.addClient(chatClient);
       const chatClients = await this.chatService.getClients();
       const welcome: WelcomeDto = {
         clients: chatClients,
