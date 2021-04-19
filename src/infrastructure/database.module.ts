@@ -17,7 +17,10 @@ import { Client } from './client.entity';
         database: configService.get('POSTGRES_DB'),
         entities: [Client],
         synchronize: true,
-      })
+        extra: {
+          ssl: true
+        }
+      }),
     }),
   ]})
 export class DatabaseModule {}
